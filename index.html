@@ -188,6 +188,7 @@ function App() {
     const netProfitPct = 100 - s.overheadPct - laborPct - s.materialsPct;
     const netProfitDollars = revenueGoal * netProfitPct / 100;
     const materialsDollars = revenueGoal * s.materialsPct / 100;
+    const magicNumber = (laborPct + s.materialsPct + s.jobSuppliesPct + s.nonDirectLaborPct) / 100;
     const grossMarginPct = 100 - laborPct - s.materialsPct - s.jobSuppliesPct - s.nonDirectLaborPct;
     const cogsTotal = revenueGoal * (laborPct + s.materialsPct + s.jobSuppliesPct + s.nonDirectLaborPct) / 100;
     const grossMargin = revenueGoal - cogsTotal;
@@ -209,7 +210,7 @@ function App() {
     const overheadBreakdown = s.overheadItems.map(item => ({ name: item.name, value: item.monthly.reduce((a,b) => a+b, 0) })).concat([{ name: "Payroll Tax", value: Math.round(payrollTaxes) }]).sort((a,b) => b.value - a.value);
     const debtService = s.debts.reduce((sum, d) => sum + d.annual, 0);
     const prev2025 = { revenue: 1951097, netProfit: -254809, overheadPct: 37, materialsPct: 39, projects: 177 };
-    return { revenueGoal, totalOverhead, totalCOGSLabor, laborPct, netProfitPct, netProfitDollars, materialsDollars, grossMarginPct, grossMargin, cogsTotal, numProjects, avgSale, monthly, quarters, productData, overheadBreakdown, debtService, cashAfterDebt: netProfitDollars - debtService, directLabor, payrollTaxes, prev2025 };
+    return { revenueGoal, totalOverhead, totalCOGSLabor, laborPct, netProfitPct, netProfitDollars, materialsDollars, grossMarginPct, grossMargin, cogsTotal, magicNumber, numProjects, avgSale, monthly, quarters, productData, overheadBreakdown, debtService, cashAfterDebt: netProfitDollars - debtService, directLabor, payrollTaxes, prev2025 };
   }, [s]);
 
   const tabs = [{ id: "dashboard", label: "Dashboard" }, { id: "monthly", label: "Monthly" }, { id: "products", label: "Products" }, { id: "overhead", label: "Overhead" }, { id: "crew", label: "Crew" }];
@@ -264,8 +265,9 @@ function App() {
               </Section>
             </div>
             <div className="col-span-12 lg:col-span-8 space-y-4">
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
                 <KPI label="Revenue Goal" value={fmt(calc.revenueGoal)} subtext={Math.round(calc.numProjects) + " projects @ " + fmt(calc.avgSale) + " avg"} />
+                <KPI label="Magic Number" value={(calc.magicNumber * 100).toFixed(1) + "%"} subtext={"COGS: " + fmt(calc.cogsTotal)} positive={calc.magicNumber < 0.65} />
                 <KPI label="Gross Margin" value={fmt(calc.grossMargin)} subtext={fmtPct(calc.grossMarginPct)} positive={calc.grossMarginPct > 30} />
                 <KPI label="Total Overhead" value={fmt(calc.totalOverhead)} subtext={fmtPct(s.overheadPct)} />
                 <KPI label="Net Profit" value={fmt(calc.netProfitDollars)} subtext={fmtPct(calc.netProfitPct)} positive={calc.netProfitDollars > 0} />
